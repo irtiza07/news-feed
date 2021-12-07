@@ -56,27 +56,27 @@ def get_uber_articles():
         )
     return articles[0:3]
 
-def get_football_tactics_articles():
-    all_pages = [
-        FOOTBALL_TACTICS,
-        f'{FOOTBALL_TACTICS}/page/2',
-        f'{FOOTBALL_TACTICS}/page/3',
-    ]
-    articles = []
-    for page_url in all_pages:
-        page = requests.get(page_url, headers={'User-Agent': 'Mozilla/5.0'})
-        soup = BeautifulSoup(page.content, "html.parser")
-        articles_container = soup.find_all("div", class_="td_block_inner tdb-block-inner td-fix-index")[0]
-        article_links = articles_container.find_all("a", {"rel": "bookmark"})
-        for article in article_links:
-            articles.append(
-                Article(
-                    title=article.text,
-                    link=article["href"]
-                )
-            )
+# def get_football_tactics_articles():
+#     all_pages = [
+#         FOOTBALL_TACTICS,
+#         f'{FOOTBALL_TACTICS}/page/2',
+#         f'{FOOTBALL_TACTICS}/page/3',
+#     ]
+#     articles = []
+#     for page_url in all_pages:
+#         page = requests.get(page_url, headers={'User-Agent': 'Mozilla/5.0'})
+#         soup = BeautifulSoup(page.content, "html.parser")
+#         articles_container = soup.find_all("div", class_="td_block_inner tdb-block-inner td-fix-index")[0]
+#         article_links = articles_container.find_all("a", {"rel": "bookmark"})
+#         for article in article_links:
+#             articles.append(
+#                 Article(
+#                     title=article.text,
+#                     link=article["href"]
+#                 )
+#             )
     
-    return random.sample(articles, 3)
+#     return random.sample(articles, 3)
 
 def get_financial_samurai_articles():
     articles = []
@@ -250,7 +250,7 @@ def get_the_manual_articles():
 print("Starting to scrape..")
 uber_articles = get_uber_articles()
 netflix_articles = get_netflix_articles()
-football_tactics_articles = get_football_tactics_articles()
+# football_tactics_articles = get_football_tactics_articles()
 financial_samurai_articles = get_financial_samurai_articles()
 four_pillar_articles = get_four_pillars_articles()
 wallet_hacks_articles = get_wallet_hacks_articles()
@@ -263,14 +263,14 @@ n_productivity_articles = get_n_productivity_articles()
 the_manual_articles = get_the_manual_articles()
 
 software_engineering_articles = uber_articles + netflix_articles
-football_articles = football_tactics_articles
+# football_articles = football_tactics_articles
 finance_articles = financial_samurai_articles + four_pillar_articles + wallet_hacks_articles
 health_articles = mind_body_green_articles + mellowed_articles
 productivity_articles = benjamin_hardy_articles + be_more_with_less_articles + mark_manson_articles \
     + n_productivity_articles + the_manual_articles
 
 print(f"Scraped {len(software_engineering_articles)} software engineering articles.")
-print(f"Scraped {len(football_articles)} football articles.")
+# print(f"Scraped {len(football_articles)} football articles.")
 print(f"Scraped {len(finance_articles)} finance articles.")
 print(f"Scraped {len(health_articles)} health articles.")
 print(f"Scraped {len(productivity_articles)} productivity articles.")
@@ -281,9 +281,9 @@ email_body += "\n \n \n SOFTWARE ENGINEERING \n \n \n"
 for scraped_article in software_engineering_articles:
     email_body += f"{scraped_article.title} {scraped_article.link} \n"
 
-email_body += "\n \n \n FOOTBALL \n \n \n"
-for scraped_article in football_articles:
-    email_body += f"{scraped_article.title} {scraped_article.link} \n"
+# email_body += "\n \n \n FOOTBALL \n \n \n"
+# for scraped_article in football_articles:
+#     email_body += f"{scraped_article.title} {scraped_article.link} \n"
 
 email_body += "\n \n \n FINANCE \n \n \n"
 for scraped_article in finance_articles:
@@ -310,5 +310,6 @@ response = requests.post(
     }
 )
 print("Done sending email")
+print(email_body)
 print(response)
 print(response.status_code)
