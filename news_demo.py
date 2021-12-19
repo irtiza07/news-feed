@@ -1,21 +1,35 @@
 import random
 import requests
+import xmltodict
+import pprint
+
 from bs4 import BeautifulSoup
 from collections import namedtuple
+from urllib.request import urlopen
+
 
 Article = namedtuple("Article", "title link")
 
+# Engineering articles
 NETFLIX_ENGINEERING = "https://netflixtechblog.com"
 UBER_ENGINEERING = "https://eng.uber.com"
+YELP_ENGINEERING = "https://engineeringblog.yelp.com/"
+META_ENGINEERING = "https://engineering.fb.com/feed/"
+DATABRICKS = "https://databricks.com/blog/category/engineering"
+AMAZON_DATABASES = "https://aws.amazon.com/blogs/database/"
 
-FOOTBALL_TACTICS = "https://thefalse9.com/category/football-tactics-for-beginners"
 
+
+# Finance articles
 FINANCIAL_SAMURAI = "https://www.financialsamurai.com/"
 FOUR_PILLAR_FINANCE = "https://fourpillarfreedom.com"
 WALLET_HACKS_FINANCE = "https://wallethacks.com/blog/"
 
+# Health Articles
 MELLOWED = "https://mellowed.com/"
+MIND_BODY_GREEN = "https://www.mindbodygreen.com"
 
+# Productivity/Lifestype articles
 BENJAMIN_HARDY = "https://benjaminhardy.com/articles/"
 BE_MORE_WITH_LESS = "https://bemorewithless.com/archives/"
 MARK_MANSON = "https://markmanson.net/archive"
@@ -56,27 +70,6 @@ def get_uber_articles():
         )
     return articles[0:3]
 
-# def get_football_tactics_articles():
-#     all_pages = [
-#         FOOTBALL_TACTICS,
-#         f'{FOOTBALL_TACTICS}/page/2',
-#         f'{FOOTBALL_TACTICS}/page/3',
-#     ]
-#     articles = []
-#     for page_url in all_pages:
-#         page = requests.get(page_url, headers={'User-Agent': 'Mozilla/5.0'})
-#         soup = BeautifulSoup(page.content, "html.parser")
-#         articles_container = soup.find_all("div", class_="td_block_inner tdb-block-inner td-fix-index")[0]
-#         article_links = articles_container.find_all("a", {"rel": "bookmark"})
-#         for article in article_links:
-#             articles.append(
-#                 Article(
-#                     title=article.text,
-#                     link=article["href"]
-#                 )
-#             )
-    
-#     return random.sample(articles, 3)
 
 def get_financial_samurai_articles():
     articles = []
@@ -127,8 +120,8 @@ def get_wallet_hacks_articles():
 def get_mind_body_green_articles():
     articles = []
     CATEGORY_URLS = [
-        "https://www.mindbodygreen.com/health/page/1",
-        "https://www.mindbodygreen.com/food/page/1"
+        f"{MIND_BODY_GREEN}/health/page/1",
+        f"{MIND_BODY_GREEN}/food/page/1"
     ]
     
     for category_url in CATEGORY_URLS:
@@ -247,10 +240,80 @@ def get_the_manual_articles():
         )
     return articles[0:2] 
 
+
+def get_yelp_articles():
+    articles = []
+    page = requests.get(YELP_ENGINEERING, headers={'User-Agent': 'Mozilla/5.0'})
+    soup = BeautifulSoup(page.content, "html.parser")
+    all_posts = soup.find_all("div", class_="posts")[0].find_all("article")
+    for article in all_posts:
+        article_link = article.find_all("a")[0]["href"]
+        articles.append(
+            Article(
+                link=f"{YELP_ENGINEERING}/{article_link}",
+                title=article.find_all("a")[0].text
+            )   
+        )
+    return articles[0:5]
+
+def get_meta_articles():
+    articles = []
+    file = urlopen(META_ENGINEERING)
+    data = file.read()
+    file.close()
+
+    data = xmltodict.parse(data)["rss"]["channel"]
+    for key, value in data.items():
+        if key == "item":
+            site_data = value
+            for item in site_data:
+                articles.append(
+                    Article(
+                        title=item["title"],
+                        link=item["link"]
+                    )
+                )
+    return articles[0:5]
+
+def get_databricks_articles():
+    articles = []
+    page = requests.get(DATABRICKS, headers={'User-Agent': 'Mozilla/5.0'})
+    soup = BeautifulSoup(page.content, "html.parser")
+    all_posts = soup.find_all("div", class_="blog-content")[0].find_all("h2", class_="blog-post--header--title")
+    for post in all_posts:
+        a_tag = post.find_all("a")[0]
+        articles.append(
+            Article(
+                title=a_tag.text,
+                link=a_tag["href"]
+            )
+        )
+    return articles[0:5]
+
+
+def get_amazon_databases_articles():
+    articles = []
+    page = requests.get(AMAZON_DATABASES, headers={'User-Agent': 'Mozilla/5.0'})
+    soup = BeautifulSoup(page.content, "html.parser")
+    all_posts = soup.find_all("article", class_="blog-post")
+    for post in all_posts:
+        a_tag = post.find_all("h2", class_="blog-post-title")[0].find_all("a")[0]
+        articles.append(
+            Article(
+                title=a_tag.text,
+                link=a_tag["href"]
+            )
+        )
+    return articles
+
+print(get_amazon_databases_articles())
+
+
+
+
 print("Starting to scrape..")
 uber_articles = get_uber_articles()
 netflix_articles = get_netflix_articles()
-# football_tactics_articles = get_football_tactics_articles()
 financial_samurai_articles = get_financial_samurai_articles()
 four_pillar_articles = get_four_pillars_articles()
 wallet_hacks_articles = get_wallet_hacks_articles()
@@ -261,16 +324,18 @@ be_more_with_less_articles = get_be_more_with_less_articles()
 mark_manson_articles = get_mark_manson_articles()
 n_productivity_articles = get_n_productivity_articles()
 the_manual_articles = get_the_manual_articles()
+yelp_articles = get_yelp_articles()
+meta_articles = get_meta_articles()
+databricks_articles = get_databricks_articles()
+aws_db_articles = get_amazon_databases_articles
 
-software_engineering_articles = uber_articles + netflix_articles
-# football_articles = football_tactics_articles
+software_engineering_articles = uber_articles + netflix_articles + yelp_articles + meta_articles + databricks_articles + aws_db_articles
 finance_articles = financial_samurai_articles + four_pillar_articles + wallet_hacks_articles
 health_articles = mind_body_green_articles + mellowed_articles
 productivity_articles = benjamin_hardy_articles + be_more_with_less_articles + mark_manson_articles \
     + n_productivity_articles + the_manual_articles
 
 print(f"Scraped {len(software_engineering_articles)} software engineering articles.")
-# print(f"Scraped {len(football_articles)} football articles.")
 print(f"Scraped {len(finance_articles)} finance articles.")
 print(f"Scraped {len(health_articles)} health articles.")
 print(f"Scraped {len(productivity_articles)} productivity articles.")
@@ -281,9 +346,6 @@ email_body += "\n \n \n SOFTWARE ENGINEERING \n \n \n"
 for scraped_article in software_engineering_articles:
     email_body += f"{scraped_article.title} {scraped_article.link} \n"
 
-# email_body += "\n \n \n FOOTBALL \n \n \n"
-# for scraped_article in football_articles:
-#     email_body += f"{scraped_article.title} {scraped_article.link} \n"
 
 email_body += "\n \n \n FINANCE \n \n \n"
 for scraped_article in finance_articles:
@@ -299,17 +361,6 @@ for scraped_article in productivity_articles:
 
 email_body += "\n \n \nBookmark the ones you plan on reading later on Raindrop.io by hitting the share button!"
 
-response = requests.post(
-    "https://api.mailgun.net/v3/sandboxccf3213708d14656855291a85687f636.mailgun.org/messages",
-    auth=("api", "091c0790b4f96f1adf238bf6f33a73e5-64574a68-376a83c7"),
-    data={
-        "from": "Mailgun Sandbox <postmaster@sandboxccf3213708d14656855291a85687f636.mailgun.org>",
-        "to": "Irtiza Hafiz <irtizahafiz07@gmail.com>",
-        "subject": "Weekly Articles Collection",
-        "text": email_body
-    }
-)
+
 print("Done sending email")
 print(email_body)
-print(response)
-print(response.status_code)
