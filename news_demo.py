@@ -306,9 +306,6 @@ def get_amazon_databases_articles():
         )
     return articles
 
-print(get_amazon_databases_articles())
-
-
 
 
 print("Starting to scrape..")
@@ -327,7 +324,7 @@ the_manual_articles = get_the_manual_articles()
 yelp_articles = get_yelp_articles()
 meta_articles = get_meta_articles()
 databricks_articles = get_databricks_articles()
-aws_db_articles = get_amazon_databases_articles
+aws_db_articles = get_amazon_databases_articles()
 
 software_engineering_articles = uber_articles + netflix_articles + yelp_articles + meta_articles + databricks_articles + aws_db_articles
 finance_articles = financial_samurai_articles + four_pillar_articles + wallet_hacks_articles
